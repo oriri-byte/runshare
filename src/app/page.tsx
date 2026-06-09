@@ -1,65 +1,53 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import prisma from "@/lib/prisma";
 
-export default function Home() {
+async function getCourses() {
+  return await prisma.course.findMany({
+    include: {
+      author: true,
+    },
+  });
+}
+
+export default async function Home() {
+  const courses = await getCourses();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
+    <div style={{ padding: "40px", fontFamily: "sans-serif" }}>
+      <header style={{ marginBottom: "40px" }}>
+        <h1>RunShare - ランニングコース共有</h1>
+        <p>登録されたランニングコースの一覧です。</p>
+      </header>
+
+      <main>
+        <h2>コース一覧 ({courses.length}件)</h2>
+        {courses.length === 0 ? (
           <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+            登録されているコースはありません。データベースへの接続は正常です！
           </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {courses.map((course) => (
+              <li
+                key={course.id}
+                style={{
+                  border: "1px solid #e2e8f0",
+                  padding: "16px",
+                  marginBottom: "12px",
+                  borderRadius: "8px",
+                }}
+              >
+                <h3>{course.title}</h3>
+                <p>{course.description}</p>
+                <p>
+                  距離: {course.distance} km | エリア: {course.area}
+                </p>
+                <p style={{ fontSize: "12px", color: "#64748b" }}>
+                  作成者: {course.author.name || "名前なし"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </main>
     </div>
   );
